@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Asistencia - Seguridad</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+        h2 {
+            text-align: center;
+            color: #1a365d;
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+            color: #2d3748;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #cbd5e0;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            background-color: #25D366;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 5px;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #1ebc57;
+        }
+        #status {
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #4a5568;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Registro de Asistencia</h2>
+    
+    <label for="empleado">Seleccione su nombre:</label>
+    <select id="empleado">
+        <option value="" disabled selected>-- Seleccione un guardia --</option>
+        <option value="Jorge Raúl Sevilla Páez">Jorge Raúl Sevilla Páez</option>
+        <option value="Kevin Oswaldo Roque Noyola">Kevin Oswaldo Roque Noyola</option>
+        <option value="J. Isabel Zuñiga Ornelas">J. Isabel Zuñiga Ornelas</option>
+        <option value="José Luis Hernandez Zuñiga">José Luis Hernandez Zuñiga</option>
+    </select>
+
+    <button onclick="registrarYEnviar()">Enviar Asistencia por WhatsApp</button>
+
+    <div id="status"></div>
+</div>
+
+<script>
+    function registrarYEnviar() {
+        const empleado = document.getElementById('empleado').value;
+        const status = document.getElementById('status');
+
+        if (!empleado) {
+            alert("Por favor, seleccione un empleado.");
+            return;
+        }
+
+        if (navigator.geolocation) {
+            status.innerText = "Obteniendo ubicación GPS...";
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    
+                    const ahora = new Date();
+                    const fecha = ahora.toLocaleDateString('es-MX');
+                    const hora = ahora.toLocaleTimeString('es-MX');
+
+                    const mapLink = `https://maps.google.com/?q=${lat},${lon}`;
+
+                    const mensaje = `*REGISTRO DE ASISTENCIA*%0A` +
+                        `*Guardia:* ${empleado}%0A` +
+                        `*Fecha:* ${fecha}%0A` +
+                        `*Hora:* ${hora}%0A` +
+                        `*Ubicación:* ${mapLink}`;
+
+                    // Se omite el parámetro phone para que permita elegir el grupo o chat
+                    const urlWhatsApp = `https://api.whatsapp.com/send?text=${mensaje}`;
+
+                    status.innerText = "Abriendo WhatsApp...";
+                    window.open(urlWhatsApp, '_blank');
+                },
+                (error) => {
+                    status.innerText = "Error al obtener la ubicación.";
+                    alert("Es necesario permitir el acceso a la ubicación GPS para enviar la asistencia.");
+                },
+                { enableHighAccuracy: true }
+            );
+        } else {
+            alert("La geolocalización no es compatible con este navegador.");
+        }
+    }
+</script>
+
+</body>
+</html>
